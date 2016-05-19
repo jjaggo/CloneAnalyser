@@ -1,0 +1,56 @@
+﻿Q1
+SELECT TOP 100 * FROM [ReposDatabase2011].[dbo].[VCSFileRevision]
+INNER JOIN [ReposDatabase2011].[dbo].[VCSTextFileRevision] ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id
+WHERE (VCSFileRevision.ExtensionId = 238) AND VCSTextFileRevision.LinesOfCode < 10  AND VCSTextFileRevision.ContentsU <> ''
+
+Q2
+SELECT RevisionId, LinesOfCode, ContentsU, FileId, Date, Comment, Alias
+FROM [ReposDatabase2011].[dbo].[VCSTextFileRevision]
+INNER JOIN [ReposDatabase2011].[dbo].[VCSFileRevision] ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id
+WHERE VCSTextFileRevision.RevisionId IN
+	(
+	SELECT MAX(RevisionId)
+	FROM [ReposDatabase2011].[dbo].[VCSTextFileRevision]
+	INNER JOIN [ReposDatabase2011].[dbo].[VCSFileRevision] ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id
+	WHERE (VCSFileRevision.ExtensionId = 238) AND VCSTextFileRevision.ContentsU <> '' AND VCSTextFileRevision.LinesOfCode < 10 
+	GROUP BY FileId
+	)
+
+Q3
+SELECT RevisionId, LinesOfCode, FileId, Date, Comment, Alias
+FROM [ReposDatabase2011].[dbo].[VCSTextFileRevision]
+INNER JOIN [ReposDatabase2011].[dbo].[VCSFileRevision] ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id
+WHERE VCSTextFileRevision.RevisionId IN
+	(
+	SELECT MAX(RevisionId)
+	FROM [ReposDatabase2011].[dbo].[VCSTextFileRevision]
+	INNER JOIN [ReposDatabase2011].[dbo].[VCSFileRevision] ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id
+	WHERE (VCSFileRevision.ExtensionId = 238) AND VCSTextFileRevision.ContentsU <> '' AND VCSTextFileRevision.LinesOfCode > 1  AND VCSTextFileRevision.LinesOfCode < 1000
+	GROUP BY FileId
+	)
+
+-------
+
+Q4
+SELECT RevisionId, LinesOfCode, FileId, Date, Comment, Alias
+FROM [ReposDatabase2011].[dbo].[VCSTextFileRevision]
+INNER JOIN [ReposDatabase2011].[dbo].[VCSFileRevision] ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id
+WHERE VCSTextFileRevision.RevisionId IN
+	(
+	SELECT MAX(RevisionId)
+	FROM [ReposDatabase2011].[dbo].[VCSTextFileRevision]
+	INNER JOIN [ReposDatabase2011].[dbo].[VCSFileRevision] ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id
+	WHERE (VCSFileRevision.ExtensionId = 238) AND VCSTextFileRevision.ContentsU <> '' AND VCSTextFileRevision.LinesOfCode > 1 
+	GROUP BY FileId
+	)
+
+Q5
+SELECT RevisionId, ContentsU
+FROM [ReposDatabase2011].[dbo].[VCSTextFileRevision]
+WHERE VCSTextFileRevision.RevisionId = 735596
+
+
+Q5 - string
+string subQuery = "SELECT RevisionId, ContentsU " +
+                    "FROM dbo.VCSTextFileRevision " +
+                    "WHERE VCSTextFileRevision.RevisionId = 735596;";

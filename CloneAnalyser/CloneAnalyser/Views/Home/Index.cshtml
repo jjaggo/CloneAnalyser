@@ -1,0 +1,432 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <!-- Left pane -->
+    <div class="col-md-8">
+        <!-- Nav buttons -->
+        <ul class="nav nav-tabs">
+            <li class="nav active" id="sourceCodeTab">
+                <a href="#Sourcecode" data-toggle="tab">Sourcecode</a>
+            </li>
+            <li class="nav" id="ACTTab">
+                <a href="#ACT" data-toggle="tab">ACT</a>
+            </li>
+            <li class="nav" id="MigrationTab">
+                <a href="#Migration" data-toggle="tab">Migration</a>
+            </li>
+            <li class="dropdown pull-right">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle">Actions<strong class="caret"></strong></a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a href="javascript:removeResultsBt();">Remove results</a>
+                    </li>
+                    <li class="divider">
+                    </li>
+                    <li>
+                        <a href="javascript:clearBt();">Clear</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <!--Source tab-->
+            <div class="tab-pane fade in active" id="Sourcecode">
+                <div class="form-group" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <textarea class="form-control" rows="8" id="inputCode">
+function myFunction(p1, p2) {
+    return p1 * p2;              // The function returns the product of p1 and p2
+}
+                    </textarea>
+                    <p>Recommendations Total: <span id="RecCounter">0</span></p>
+                </div>
+            </div>
+            <!--ACT tab-->
+            <div class="tab-pane fade" id="ACT">
+                <p id="ACTText">Press Analysis, to see corresponding abstract code tree.</p>
+            </div>
+            <!--Migration tab-->
+            <div class="tab-pane fade" id="Migration">
+                <!-- Buttons -->
+                <div class="btn-group">
+                    <button id="migrateButton" class="btn btn-default" type="button" onclick="migrateBt()" data-toggle="popover" title="Migrate" data-content="Recreates recommendation database. Migrates all sourcefiles from opensource projects. Might take few hours.">
+                        <span class="glyphicon glyphicon glyphicon-repeat"></span> Migrate
+                    </button>
+                </div>
+                <!-- Migration progressbar -->
+                <div class="progress hidden" id="progressbar">
+                    <div id="progressbarprogress" class="progress-bar progress-success" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                    </div>
+                </div>
+                <!-- Parameters -->
+                <div class="input-group">
+                    <label for="clusterSim">Cluster similarity</label>
+                    <span data-toggle="popover" title="Cluster similarity" data-content="Similarities above this threshold are considered similar."> <i class="glyphicon glyphicon-info-sign"></i></span>
+                    <input type="number" id="clusterSim" step=any min="0" max="1" class="form-control" aria-label="..." value="0.8">
+                </div>
+                <div class="input-group">
+                    <label for="minTreeSize">Minimal tree size</label>
+                    <span data-toggle="popover" title="Minimal tree size" data-content="Minimal number of nodes in ACT to be analysed/migrated."> <i class="glyphicon glyphicon-info-sign"></i></span>
+                    <input type="number" id="minTreeSize" step=1 min="0" max="100" class="form-control" aria-label="..." value="2">
+                </div>
+                <div class="input-group">
+                    <label for="maxFilesCount">Maximal file count</label>
+                    <span data-toggle="popover" title="Maximal file count" data-content="Maximal number of files to be migrated."> <i class="glyphicon glyphicon-info-sign"></i></span>
+                    <input type="number" id="maxFilesCount" step=1 min="0" max="10000" class="form-control" aria-label="..." value="1000">
+                </div>
+                <div class="input-group">
+                    <label for="maxConcurrent">Maximal concurrent migrations</label>
+                    <span data-toggle="popover" title="Maximal concurrent migrations" data-content="Maximal number of migration processes executed at once."> <i class="glyphicon glyphicon-info-sign"></i></span>
+                    <input type="number" id="maxConcurrent" step=1 min="0" max="100" class="form-control" aria-label="..." value="10">
+                </div>
+                <div>
+                    <label for="exactMatch">Exact function match only</label>
+                    <input type="checkbox" id="exactMatch">
+                    <span data-toggle="popover" title="Exact function match only" data-content="If checked built-in functions are matched only against same functions."> <i class="glyphicon glyphicon-info-sign"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-pills hidden">
+            <li class="active">
+                <a href="#"> <span class="badge pull-right">42</span> Major classes</a>
+            </li>
+            <li>
+                <a href="#"> <span class="badge pull-right">16</span> Minor classes</a>
+            </li>
+        </ul>
+    </div>
+    <!-- Analysis pane -->
+    <div class="col-md-4">
+        <!-- Buttons -->
+        <div class="btn-group">
+            <button id="analyseButton" class="btn btn-success" type="button" onclick="analyseBt()" data-toggle="popover" title="Analyse" data-content="Analyses sourcecode against recommendation database. Might take few minutes.">
+                <span class="glyphicon glyphicon-search"></span> Analyse
+            </button>
+        </div>
+        <!-- Parameters -->
+        <div class="input-group">
+            <label for="clusterSim2">Cluster similarity</label>
+            <span data-toggle="popover" title="Cluster similarity" data-content="Similarities above this threshold are considered similar."> <i class="glyphicon glyphicon-info-sign"></i></span>
+            <input type="number" id="clusterSim2" step=any min="0" max="1" class="form-control" aria-label="..." value="0.8">
+        </div>
+        <div>
+            <label for="exactMatch2">Exact function match only</label>
+            <input type="checkbox" id="exactMatch2">
+            <span data-toggle="popover" title="Exact function match only" data-content="If checked built-in functions are matched only against same functions."> <i class="glyphicon glyphicon-info-sign"></i></span>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Recommended template:</h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <p>Similarity: <span id="similarityValue"></span></p>
+                    </div>
+                    <div>
+                        <p>Initial code:</p>
+                        <textarea id="initialCodeArea"></textarea>
+                    </div>
+                    <div>
+                        <p>Recommended code:</p>
+                        <textarea id="recommendationTextArea"></textarea>
+                    </div>
+                    <div>
+                        <label for="simpilifiedComp">Replace environement</label>
+                        <input type="checkbox" id="replaceEnvironment">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="cancelButton" type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
+                    <button id="rejectButton" type="button" class="btn btn-danger" data-dismiss="modal">Reject</button>
+                    <button id="applyButton" type="button" class="btn btn-success" data-dismiss="modal">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var uri = 'http://localhost:52503/';
+
+    //Analysis flow
+    var codeMirror;
+    var initialCodeArea;
+    var recommendationTextArea;
+    var textMarks = [];
+    var recommendedSource = "";
+    var recommendedModifiedSource = "";
+    var recCounter = 0; //Recommendation counter number
+    var migrationStartTime;
+
+    //Migration flow
+    var concurrentMigrations = 0; //Migrations running concurrently
+    var migrated = 0; //Already migrated files
+
+    window.onload = function (e) {
+        $(".hidden").hide();
+        $(".hidden").removeClass("hidden");
+
+        codeMirror = CodeMirror.fromTextArea(document.getElementById("inputCode"), {
+            lineNumbers: true,
+            matchBrackets: true
+        });
+
+        initialCodeArea = CodeMirror.fromTextArea(document.getElementById("initialCodeArea"), {
+            lineNumbers: false,
+            readOnly: true
+        });
+        initialCodeArea.setSize(500, 180);
+        recommendationTextArea = CodeMirror.fromTextArea(document.getElementById("recommendationTextArea"), {
+            lineNumbers: false
+        });
+        recommendationTextArea.setSize(500, 180);
+
+        //Replace text area with code editor
+        $("#replaceEnvironment").change(function () {
+            if (this.checked) {
+                recommendationTextArea.setValue(recommendedModifiedSource); 
+            } else {
+                recommendationTextArea.setValue(recommendedSource);
+            }
+        });
+        //Make popovers functional
+        $('[data-toggle="popover"]').popover({
+            placement: "bottom",
+            trigger: "hover"
+        });
+    };
+
+    document.body.onclick = function (e) { //when the document body is clicked
+        if (window.event) {
+            e = event.srcElement; //assign the element clicked to e (IE 6-8)
+        }
+        else {
+            e = e.target; //assign the element clicked to e
+        }
+    }
+
+    function analyseBt() {
+        var similarityThresholdValue = $('#clusterSim2').val();
+        var exactMatch = $('#exactMatch2').is(":checked");
+
+        $("#analyseButton").addClass("disabled");
+        for (var i = 0; i < textMarks.length; i++) {
+            textMarks[i].clear();
+        }
+
+        var inputCodeValue = codeMirror.getValue();
+        var simplifiedCompValue = false;
+
+        $.ajax({
+            url:"../api/Code",
+            type:"POST",
+            data: JSON.stringify({ code: inputCodeValue, similarityThreshold: similarityThresholdValue, exactMatch: exactMatch }),
+            contentType:"application/json; charset=utf-8",
+            dataType:"json",
+            success: function (data) {
+                $("#analyseButton").removeClass("disabled");
+                alert("Request successful");
+                handleAnalysisResults(data);
+            },
+            fail: function (data) {
+                alert("Request failed");
+                $("#ResultsText").html("fail " + data);
+            }
+        })
+    }
+
+    function handleAnalysisResults(data) {
+        $("#ACTText").html(data.ACT);
+        recCounter = data.patterns.length;
+        $("#RecCounter").html(recCounter);
+
+        for (var i = 0; i < data.patterns.length; i++) {
+            var pattern = data.patterns[i];
+            handleAnalysisResult(pattern);
+            //alert("pattern:" + pattern.startLine + " " + pattern.startPos + ":" + pattern.endLine + " " + pattern.endPos + "  /n" + pattern.source)
+            console.log(i + ": " + pattern.startLine + " " + pattern.startPos + "|" + pattern.endLine + " " + pattern.endPos + " - " + pattern.source);
+        }
+    }
+
+    function handleAnalysisResult(pattern) {
+        //Count characters from previous lines
+        var previousLenghts = 0;
+        for (var i = 0; i < pattern.startLine - 1; i++) {
+            previousLenghts += codeMirror.getLine(i).length;
+        }
+        //Define start and end positions
+        var startPos = { line: pattern.startLine - 1, ch: pattern.startPos - previousLenghts - (pattern.startLine - 1) }; //substracting pattern.startLine because the number of line terminators
+        var endPos = { line: pattern.endLine - 1, ch: pattern.endPos - previousLenghts - (pattern.startLine - 2) };
+
+        var newSpan = document.createElement('span');
+        var text = codeMirror.getRange(startPos, endPos);
+        newSpan.appendChild(document.createTextNode(text));
+        newSpan.classList.add("styled-background");
+
+        var mark = codeMirror.markText(startPos, endPos, {
+            replacedWith: newSpan,
+            atomic: true,
+            handleMouseEvents: true
+        });
+        textMarks.push(mark);
+
+        newSpan.addEventListener("click", function () {
+            recommendedSource = pattern.source;
+            recommendedModifiedSource = pattern.replacedEnvironmentSource;
+
+            initialCodeArea.setValue(text);
+            if (document.getElementById("replaceEnvironment").checked) {
+                recommendationTextArea.setValue(recommendedModifiedSource);
+            } else {
+                recommendationTextArea.setValue(recommendedSource);
+            }
+            $("#similarityValue").text(pattern.similarity);
+
+            initialCodeArea.refresh();
+            $('#myModal').modal('toggle');
+            //Reject button
+            var rejectButton = document.getElementById("rejectButton");
+            var rejectFunction = function () {
+                mark.clear();
+                $("#RecCounter").html(--recCounter);
+            };
+            rejectButton.addEventListener("click", rejectFunction);
+            //Apply button
+            var applyButton = document.getElementById("applyButton");
+            var applyFunction = function () {
+                mark.clear();
+                $("#RecCounter").html(--recCounter);
+                var replacement = document.getElementById("replaceEnvironment").checked ? recommendedModifiedSource : recommendedSource;
+                codeMirror.replaceRange(replacement, startPos, endPos);
+                removeResultsBt(); //The system don't adjust other results yet
+            };
+            applyButton.addEventListener("click", applyFunction);
+            //Remove button bindigs when model is closed
+            $('#myModal').on('hidden.bs.modal', function () {
+                applyButton.removeEventListener("click", applyFunction);
+                rejectButton.removeEventListener("click", rejectFunction);
+            });
+            //Refreshing modal to eliminate unwanted scroll
+            setTimeout(function () {
+                initialCodeArea.refresh();
+                recommendationTextArea.refresh();
+            }, 500);
+        });
+    }
+
+    function clearBt() {
+        codeMirror.setValue("");
+    }
+
+    function removeResultsBt() {
+        for (var i = 0; i < textMarks.length; i++) {
+            textMarks[i].clear();
+        }
+        recCounter = 0;
+        $("#RecCounter").html(recCounter);
+    }
+
+    function migrateBt() {
+        $("#migrateButton").addClass("disabled");
+
+        var maxFilesCountValue = $('#maxFilesCount').val();
+        var maxconcurrent = $('#maxConcurrent').val();
+        var progressbar = $("#progressbar");
+        var progress = $("#progressbarprogress");
+        migrationStartTime = Date.now();
+
+        progressbar.show();
+        progress.css("width", "0%");
+        progress.attr("aria-valuenow", "0");
+
+        $.ajax({
+            url: "../api/Migration",
+            type: "POST",
+            data: JSON.stringify({ maxFilesCount: maxFilesCountValue }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                concurrentMigrations = 0;
+                if (data.files != undefined) {
+                    var maxnum = Math.min(data.files.length, maxFilesCountValue);
+                    var pval = (1 / (1 + maxnum)).toPrecision(3) * 100;
+                    migrated = 0;
+                    progress.css("width", pval + "%");
+                    progress.attr("aria-valuenow", 1);
+                    progress.attr("aria-valuemax", 1 + maxnum);
+
+                    startMigration(progress, 0, maxnum, maxconcurrent, data.files);
+                } else {
+                    progressbar.hide();
+                    alert("Migration failed");
+                }
+            },
+            fail: function () {
+                alert("Migration failed");
+            }
+        });
+    }
+
+    function startMigration(progress, num, maxnum, maxconcurrent, files) {
+        if (num < maxnum && num < files.length) {
+            if (concurrentMigrations < maxconcurrent) {
+                migrateFile(progress, maxnum, files[num]);
+                startMigration(progress, num + 1, maxnum, maxconcurrent, files);
+            } else {
+                setTimeout(function () { startMigration(progress, num, maxnum, maxconcurrent, files) }, 1000);
+            }
+        } else {
+            if (migrated < maxnum && migrated < files.length) {
+                setTimeout(function () { startMigration(progress, num, maxnum, maxconcurrent, files) }, 1000);
+            } else {
+                var time = Math.round(Date.now() - migrationStartTime) / 1000;
+                console.log("Migration total time: " + time + "s");
+
+                $("#migrateButton").removeClass("disabled");
+                alert("Migration successful, total time: " + time + "s");
+                var progressbar = $("#progressbar");
+                progressbar.hide();
+            }
+        }
+    }
+
+    function migrateFile(progress, maxnum, fileId) {
+        var similarityThresholdValue = $('#clusterSim').val();
+        var minTreeSizeValue = $('#minTreeSize').val();
+        var exactMatch = $('#exactMatch').is(":checked");
+        var startTime = Date.now();
+        concurrentMigrations++;
+
+        $.ajax({
+            url: "../api/Migrate",
+            type: "POST",
+            data: JSON.stringify({ file: fileId, similarityThreshold: similarityThresholdValue, minTreeSize: minTreeSizeValue, exactMatch: exactMatch }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                migrated++;
+                var pval = ((1 + migrated) / (1 + maxnum)).toPrecision(3) * 100;
+                progress.css("width", pval + "%");
+                progress.attr("aria-valuenow", migrated);
+                concurrentMigrations--;
+
+                var time = Math.round(Date.now() - startTime) / 1000;
+                console.log("Migrated[" + migrated + "/" + maxnum + "] t:" + time + "s node count:" + data.nodeCount + " char count:" + data.charCount);
+                console.log("total clusters:" + data.dbClusterCount + " total clones:" + data.dbCloneCount);
+            },
+            fail: function () {
+                migrated++;
+                concurrentMigrations--;
+                alert("File migration failed");
+            }
+        });
+    }
+
+</script>

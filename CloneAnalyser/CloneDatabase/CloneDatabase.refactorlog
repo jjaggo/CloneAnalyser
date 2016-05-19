@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
+  <Operation Name="Rename Refactor" Key="81a149f1-0bba-4fbd-85e3-a7893800024f" ChangeDateTime="03/24/2016 06:47:11">
+    <Property Name="ElementName" Value="[dbo].[Clone].[CloneCluster_id]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Clone]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="CloneClusterId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="b514b986-73fc-4b9a-bcc8-1ad937fc2914" ChangeDateTime="03/24/2016 06:47:45">
+    <Property Name="ElementName" Value="[dbo].[CloneCluster].[CloneId]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[CloneCluster]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="TemplateId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="0e54776e-a396-4ec2-ba42-fa42b2c60fe8" ChangeDateTime="03/24/2016 06:55:23">
+    <Property Name="ElementName" Value="[dbo].[CloneCluster].[TemplateId]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[CloneCluster]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="TemplateCloneId" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="5b8378a1-e5e1-4752-9661-f8e982ff2152" ChangeDateTime="05/06/2016 14:19:59">
+    <Property Name="ElementName" Value="[dbo].[CloneCluster].[Clones]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[CloneCluster]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="CloneCount" />
+  </Operation>
+</Operations>

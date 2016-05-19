@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "CloneDatabase", "CloneDatabase\CloneDatabase.sqlproj", "{307EA12F-9B27-4636-B90E-CE39861087F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloneParser", "CloneParser\CloneParser.csproj", "{24D65DF2-2953-4448-8F58-3E0E2C3C687E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloneAnalyser", "CloneAnalyser\CloneAnalyser.csproj", "{17C77C06-6281-4DF8-875B-65E99BAFDCB0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{24D65DF2-2953-4448-8F58-3E0E2C3C687E} = {24D65DF2-2953-4448-8F58-3E0E2C3C687E}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{307EA12F-9B27-4636-B90E-CE39861087F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{307EA12F-9B27-4636-B90E-CE39861087F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{307EA12F-9B27-4636-B90E-CE39861087F7}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{307EA12F-9B27-4636-B90E-CE39861087F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{307EA12F-9B27-4636-B90E-CE39861087F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{307EA12F-9B27-4636-B90E-CE39861087F7}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{24D65DF2-2953-4448-8F58-3E0E2C3C687E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24D65DF2-2953-4448-8F58-3E0E2C3C687E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24D65DF2-2953-4448-8F58-3E0E2C3C687E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24D65DF2-2953-4448-8F58-3E0E2C3C687E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17C77C06-6281-4DF8-875B-65E99BAFDCB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17C77C06-6281-4DF8-875B-65E99BAFDCB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17C77C06-6281-4DF8-875B-65E99BAFDCB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17C77C06-6281-4DF8-875B-65E99BAFDCB0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
