@@ -34,6 +34,7 @@ namespace CloneParser
         Function = 67
     }
 
+    /// <summary> Structure for holding reconstructed source code and tree matching to source.</summary>
     public struct SourceInfo
     {
         public int startLine;
@@ -52,21 +53,22 @@ namespace CloneParser
         }
     }
 
+    /// <summary> Intermediate language stored as abstract code tree.</summary>
     public class ACT
     {
         public ACTtype type { get; set; }
         public List<ACT> children { get; private set; }
         public ACT parent { get; set; }
-        public string value { get; set; }
-        public int number { get; set; }
+        public string value { get; set; } //Value stored in this tree
+        public int number { get; set; } //Line number
         public Dictionary<string, Identifier> readEnvironment { get; private set; }
         public Dictionary<string, Identifier> writeEnvironment { get; private set; }
-        public List<Identifier> variables { get; set; }
-        public int nodeCount { get; set; }
-        public int processNodeCount { get; set; }
-        public Dictionary<String, ACT> functionMap { get; private set; }
-        public SourceInfo sourceInfo { get; private set; }
-        public int matrixId { get; set; }
+        public List<Identifier> variables { get; set; } //All variables in this tree
+        public int nodeCount { get; set; } //All nodes count
+        public int processNodeCount { get; set; } //Nodes count except: program, block and term
+        public Dictionary<String, ACT> functionMap { get; private set; } //Map for matching functions
+        public SourceInfo sourceInfo { get; private set; } //Source code info and matching to source code
+        public int matrixId { get; set; } //tree reference in poset graph similarity matrix
         public ACT matching { get; set; } //Used only in simple similarity
         public bool isBadStartingPoint { get; set; } //Bad tree for using as analysis startpoint
 
@@ -77,6 +79,7 @@ namespace CloneParser
         public static SourceInfo emptySourceInfo = new SourceInfo("", 0, 0, 0, 0);
         public static HashSet<String> builtInFunctions { get; set; }
 
+        /// <summary> Static counstructor initializes groups.</summary>
         static ACT()
         {
             undefinedInitializer = new ACT(emptySourceInfo, ACTtype.Term);
@@ -108,6 +111,8 @@ namespace CloneParser
             matching = null;
         }
 
+        /// <summary> Gives all variables in this subtree</summary>
+        /// <returns> Returns key value mapping from string to variable</returns>
         public KeyValuePair<string, Identifier>[] GetVariables()
         {
             KeyValuePair<string, Identifier>[] variables = new KeyValuePair<string, Identifier>[writeEnvironment.Count];
@@ -120,6 +125,9 @@ namespace CloneParser
             return variables;
         }
 
+        /// <summary> Adds child node inside block</summary>
+        /// <param name="child"> Subtree to add as a child</param>
+        /// <param name="isBadStartingPoint"> If true this subtree is not being chosed as analysis root</param>
         public void AddChildBlock(ACT child, bool isBadStartingPoint = false)
         {
             if (child == null)
@@ -135,6 +143,8 @@ namespace CloneParser
             block.AddChild(child);
         }
 
+        /// <summary> Adds child node</summary>
+        /// <param name="child"> Subtree to add as a child</param>
         public void AddChild(ACT child)
         {
             if (child == null)
@@ -161,17 +171,16 @@ namespace CloneParser
             }
         }
 
+        /// <summary> Starts post processing flow, optimizing blocks and resolving environemnt</summary>
         public void PostProcess()
         {
             OptimizeBlocks();
             Dictionary<string, Identifier> rootEnvironment = new Dictionary<string, Identifier>();
             int rootNum = 0;
             ResolveEnvironment(rootEnvironment, rootNum);
-
-            //Dictionary<string, ACT> functionMap = new Dictionary<string, ACT>();
-            //ExtractFunctions(functionMap);
         }
 
+        /// <summary> Removes uneccesary blocks</summary>
         private void OptimizeBlocks()
         {
             for (int i = 0; i < children.Count; i++)
@@ -203,6 +212,7 @@ namespace CloneParser
             }
         }
 
+        /// <summary> Extracts functions into dictionary</summary>
         public void ExtractFunctions(Dictionary<string, ACT> functionMap)
         {
             //Add dictionary reference to all nodes
@@ -216,14 +226,15 @@ namespace CloneParser
                     if (child.type == ACTtype.Function)
                     {
                         functionMap.Add(child.value, child);
-
-                        //Remove function declaration body
-                        //children[i] = new ACT(child.sourceInfo, ACTtype.Function, child.value);
                     }
                 }
             }
         }
 
+        /// <summary> Finds reading and writing environments for the given subree</summary>
+        /// <param name="rootEnvironemnt"> Dictionary of names to identifiers</param
+        /// <param name="rootNumber">The root element number</param>
+        /// <returns> Returns root node number</returns>
         private int ResolveEnvironment(Dictionary<string, Identifier> rootEnvironment, int rootNumber)
         {
             this.number = rootNumber;
@@ -237,16 +248,6 @@ namespace CloneParser
                 ACT child = children[i];
                 rootNumber = child.ResolveEnvironment(rootEnvironment, rootNumber + 1);
 
-                /*if (child.type != ACTtype.Function)
-                {
-                    nodeCount += child.nodeCount;
-                    processNodeCount += child.processNodeCount;
-                }
-                else
-                {
-                    nodeCount++;
-                    processNodeCount++;
-                }*/
                 nodeCount += child.nodeCount;
                 processNodeCount += child.processNodeCount;
 
@@ -274,6 +275,7 @@ namespace CloneParser
             return rootNumber;
         }
 
+        /// <summary> Determines all used variables in current subtree</summary>
         private void UpdateVariables()
         {
             foreach (KeyValuePair<string, Identifier> pair in readEnvironment)
@@ -288,7 +290,9 @@ namespace CloneParser
             }
         }
 
-        // Adds all unique elements from e2 into e1
+        /// <summary> Merges environments by adding all unique elements from e2 into e1</summary>
+        /// <param name="e1"> Environment 1</param
+        /// <param name="e2"> Environment 2</param>
         public void MergeEnvironments(Dictionary<string, Identifier> e1, Dictionary<string, Identifier> e2)
         {
             foreach (KeyValuePair<string, Identifier> pair in e2)
@@ -299,7 +303,12 @@ namespace CloneParser
                 }
             }
         }
-        // Adds string into e1 if unique
+
+        /// <summary> Adds new string into e1 if it's unique</summary>
+        /// <param name="e1"> Environment 1</param
+        /// <param name="rootElement"> Root environment for the whole tree</param>
+        /// <param name="s"> New string valueS</param>
+        /// <param name="type"> Corresponding data value ACT type</param>
         public void AddEnvironment(Dictionary<string, Identifier> e1, Dictionary<string, Identifier> rootEnvironment, string s, IdentifierType type)
         {
             if (!e1.ContainsKey(s))
@@ -321,6 +330,8 @@ namespace CloneParser
             }
         }
 
+        /// <summary> Represents current tree environment</summary>
+        /// <returns> Returns string representing the environment</returns>
         public String EnvironmentString()
         {
             String ret = "[";
@@ -345,6 +356,8 @@ namespace CloneParser
             return ret;
         }
 
+        /// <summary> Represents maximal double digit number as a string</summary>
+        /// <returns> Returns aligned string of the number</returns>
         private String NumberToString()
         {
             if (number < 10)
@@ -352,6 +365,9 @@ namespace CloneParser
             return number.ToString();
         }
 
+        /// <summary> Converts succinct ACT into ACT</summary>
+        /// <param name="succinct"> Succinct representation of ACT</param>
+        /// <returns> Returns reconstucted ACT</returns>
         public static ACT FromSuccinct(String succinct)
         {
             int len = succinct.Length;
@@ -434,6 +450,8 @@ namespace CloneParser
             return first;
         }
 
+        /// <summary> Converts ACT into succinct ACT</summary>
+        /// <returns> Returns succinct representation of currrent ACT</returns>
         public String ToSuccinct()
         {
             String result = "";
@@ -473,6 +491,8 @@ namespace CloneParser
             return result;
         }
 
+        /// <summary> Converts current ACT into list of nodes</summary>
+        /// <out name="list"> Out node list about current tree</out>
         public void ToNodeList(List<ACT> list)
         {
             int cn = children.Count;
@@ -490,6 +510,11 @@ namespace CloneParser
             }
         }
 
+        /// <summary> Represents the current ACT</summary>
+        /// <param name="indent"> Indentation character</param>
+        /// <param name="space"> Space character</param>
+        /// <param name="lineBreak"> LineBreak character</param>
+        /// <returns> String representing the current ACT</returns>
         public String ToString(string indent, string space, string lineBreak)
         {
             String result = ToStringTree(indent, space, lineBreak);
@@ -506,6 +531,11 @@ namespace CloneParser
             return result;
         }
 
+        /// <summary> Represents the current ACT as a string tree</summary>
+        /// <param name="indent"> Indentation character</param>
+        /// <param name="space"> Space character</param>
+        /// <param name="lineBreak"> LineBreak character</param>
+        /// <returns> String representing the current ACT</returns>
         public String ToStringTree(string indent, string space, string lineBreak)
         {
             String result = NumberToString() + indent;
@@ -536,6 +566,9 @@ namespace CloneParser
             return result;
         }
 
+        /// <summary> Returns true if current tree is equal to given argument</summary>
+        /// <param name="other"> Other ACT</param>
+        /// <returns> Bool representing if trees are equal or not</returns>
         public bool IsEqual(ACT other)
         {
             if (type != other.type)
@@ -545,6 +578,9 @@ namespace CloneParser
             return true;
         }
 
+        /// <summary> Returns ACT that from the list that is equal to the current ACT</summary>
+        /// <param name="other"> Other ACT list</param>
+        /// <returns> ACT that is equal otherwise null</returns>
         public ACT ListGetEqual(List<ACT> list)
         {
             foreach (ACT act in list)

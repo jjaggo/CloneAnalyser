@@ -169,6 +169,7 @@ function myFunction(p1, p2) {
     var concurrentMigrations = 0; //Migrations running concurrently
     var migrated = 0; //Already migrated files
 
+    /// <summary> Initializes UI beginning state</summary>
     window.onload = function (e) {
         $(".hidden").hide();
         $(".hidden").removeClass("hidden");
@@ -203,6 +204,7 @@ function myFunction(p1, p2) {
         });
     };
 
+    /// <summary> Assignes all events in the document</summary>
     document.body.onclick = function (e) { //when the document body is clicked
         if (window.event) {
             e = event.srcElement; //assign the element clicked to e (IE 6-8)
@@ -212,6 +214,7 @@ function myFunction(p1, p2) {
         }
     }
 
+    /// <summary> Action for analysis button</summary>
     function analyseBt() {
         var similarityThresholdValue = $('#clusterSim2').val();
         var exactMatch = $('#exactMatch2').is(":checked");
@@ -242,6 +245,8 @@ function myFunction(p1, p2) {
         })
     }
 
+    /// <summary> Handles all analysis results</summary>
+    /// <param name="data"> request response data</param>
     function handleAnalysisResults(data) {
         $("#ACTText").html(data.ACT);
         recCounter = data.patterns.length;
@@ -255,6 +260,8 @@ function myFunction(p1, p2) {
         }
     }
 
+    /// <summary> Handles an analysis result</summary>
+    /// <param name="pattern"> given analysis result pattern</param>
     function handleAnalysisResult(pattern) {
         //Count characters from previous lines
         var previousLenghts = 0;
@@ -321,10 +328,12 @@ function myFunction(p1, p2) {
         });
     }
 
+    /// <summary> Action for clear button</summary>
     function clearBt() {
         codeMirror.setValue("");
     }
 
+    /// <summary> Action for remove results button</summary>
     function removeResultsBt() {
         for (var i = 0; i < textMarks.length; i++) {
             textMarks[i].clear();
@@ -333,6 +342,7 @@ function myFunction(p1, p2) {
         $("#RecCounter").html(recCounter);
     }
 
+    /// <summary> Action for migration button</summary>
     function migrateBt() {
         $("#migrateButton").addClass("disabled");
 
@@ -374,6 +384,11 @@ function myFunction(p1, p2) {
         });
     }
 
+    /// <summary> Function for starting new migrations</summary>
+    /// <param name="progress"> The ammount of progress already done</param>
+    /// <param name="num"> Current migration number</param>
+    /// <param name="maxnum"> maximal number of concurrent migrations</param>
+    /// <param name="files"> files list</param>
     function startMigration(progress, num, maxnum, maxconcurrent, files) {
         if (num < maxnum && num < files.length) {
             if (concurrentMigrations < maxconcurrent) {
@@ -397,6 +412,10 @@ function myFunction(p1, p2) {
         }
     }
 
+    /// <summary> Migrates one file</summary>
+    /// <param name="progress"> The ammount of progress already done</param>
+    /// <param name="maxnum"> maximal number of concurrent migrations</param>
+    /// <param name="fileid"> migratable file</param>
     function migrateFile(progress, maxnum, fileId) {
         var similarityThresholdValue = $('#clusterSim').val();
         var minTreeSizeValue = $('#minTreeSize').val();

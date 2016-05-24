@@ -15,6 +15,7 @@ using System.Data.Entity.Validation;
 
 namespace CloneAnalyser.Controllers
 {
+    /// <summary> Data structure for analysis results</summary>
     public class AnalyzeResult
     {
         public float similarity;
@@ -35,7 +36,12 @@ namespace CloneAnalyser.Controllers
     {
         private CloneAnalyserDBContextEntities db = new CloneAnalyserDBContextEntities();
 
-        // POST: api/Code
+        // -- ANALYSIS WORKFLOW --
+
+        //POST: api/Code 
+        /// <summary> Starts analysis workflow.</summary>
+        /// <param name="inputCode"> Input data from user form</param>
+        /// <returns> Returns analysis result</returns>
         [ResponseType(typeof(AnalyseResponse))]
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route("api/Code")]
@@ -43,6 +49,7 @@ namespace CloneAnalyser.Controllers
         {
             ACT act = CloneParser.Program.ParseText(inputCode.Code);
             System.Diagnostics.Debug.WriteLine("Starting analysis workflow\nInput ACT:\n" + act.ToStringTree(" ", " ", "\n"));
+            System.Diagnostics.Debug.WriteLine("tesst");
 
             if (!ModelState.IsValid)
             {
@@ -76,6 +83,11 @@ namespace CloneAnalyser.Controllers
             return Ok(inputCodeResponse);
         }
 
+        /// <summary> Recursevly analyses subprogram</summary>
+        /// <param name="act"> Subtree ACT</param>
+        /// <param name="similarityThreshold"> User input value for similarity threshold</param>
+        /// <param name="exactMatch"> If true only same buil-in function names are matched</param>
+        /// <out name="results"> Accumulator list for anaysis results</param>
         private void AnalyseFunction(ACT act, float similarityThreshold, bool exactMatch, List<AnalyzeResult> results)
         {
             if (!act.isBadStartingPoint)
@@ -95,6 +107,11 @@ namespace CloneAnalyser.Controllers
             }
         }
 
+        /// <summary> Analyses section of program</summary>
+        /// <param name="act"> Subtree ACT</param>
+        /// <param name="similarityThreshold"> User input value for similarity threshold</param>
+        /// <param name="exactMatch"> If true only same buil-in function names are matched</param>
+        /// <returns> Returns all analysis results for this subtree</param>
         private AnalyzeResult AnalyseSection(ACT act, float similarityThreshold, bool exactMatch)
         {
             List<AnalyzeResult> clusters = FindSimilarClusters(act, similarityThreshold, exactMatch);
@@ -117,9 +134,12 @@ namespace CloneAnalyser.Controllers
             return null;
         }
 
-        // -- MIGRATE --
+        // -- MIGRATON WORKFLOW --
 
-        // POST: api/MigrationFiles
+        // POST: api/MigrationFiles.
+        /// <summary>  Starts migration workflow</summary>
+        /// <param name="inputMigration"> Migration input data from user form</param>
+        /// <returns> Returns list of migratable files</param>
         [ResponseType(typeof(StartMigrationResponse))]
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route("api/Migration")]
@@ -137,6 +157,7 @@ namespace CloneAnalyser.Controllers
                     connection.Open();
                     System.Diagnostics.Debug.WriteLine("BETAMAX connection");
 
+                    //Select all javascript files from database
                     string codeQuery = "SELECT MAX(RevisionId) " +
                         "FROM dbo.VCSTextFileRevision " +
                         "INNER JOIN dbo.VCSFileRevision ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id " +
@@ -166,6 +187,9 @@ namespace CloneAnalyser.Controllers
 
 
         // POST: api/Migrate
+        /// <summary> Starts single file migration</summary
+        /// <param name="inputMigration"> Migratable file id and user data from input form</param>
+        /// <returns> If migration was successful or not</returns>
         [ResponseType(typeof(MigrateResponse))]
         [System.Web.Http.HttpPost]
         [System.Web.Http.Route("api/Migrate")]
@@ -185,6 +209,7 @@ namespace CloneAnalyser.Controllers
                     connection.Open();
                     System.Diagnostics.Debug.WriteLine("BETAMAX connection");
 
+                    //Select file data with given ID
                     string codeQuery = "SELECT RevisionId, FileId, LinesOfCode, Date, Comment, Alias, ContentsU " +
                     "FROM dbo.VCSTextFileRevision " +
                     "INNER JOIN dbo.VCSFileRevision ON VCSTextFileRevision.RevisionId = VCSFileRevision.Id " +
@@ -203,16 +228,6 @@ namespace CloneAnalyser.Controllers
                                 nodeCount = act.nodeCount;
                                 
                                 MigrateFunction(act, inputMigrate.similarityThreshold, minTreeSize, inputMigrate.exactMatch);
-                                //Dictionary<string, ACT> dictionary = new Dictionary<string, ACT>();
-                                //act.ExtractFunctions(dictionary);
-                                /*int i = 0;
-                                foreach (KeyValuePair<string, ACT> pair in dictionary)
-                                {
-                                    i++;
-
-                                    //System.Diagnostics.Debug.WriteLine(i + " ACT: (" + pair.Key + ")\n" + pair.Value.ToStringTree("  ", " ", "\n"));
-                                    MigrateFunction(pair.Value, inputMigrate.clusterSimilarity, minTreeSize, inputMigrate.simplified);
-                                }*/
                             }
                             catch (System.NullReferenceException)
                             {
@@ -251,12 +266,18 @@ namespace CloneAnalyser.Controllers
             return Ok(response);
         }
 
+        /// <summary> Clears recommencation model</summary>
         private void RemoveAllData()
         {
             db.Database.ExecuteSqlCommand("delete from Clone");
             db.Database.ExecuteSqlCommand("delete from CloneCluster");
         }
 
+        /// <summary> Recursevly migrates subprogram</summary>
+        /// <param name="act"> Subtree ACT</param>
+        /// <param name="similarityThreshold"> User input value for similarity threshold</param>
+        /// <param name="minTreeSize"> User input value for minimal tree size to be migrated</param>
+        /// <param name="exactMatch"> If true only same buil-in function names are matched</param>
         private void MigrateFunction(ACT act, float similarityThreshold, int minTreeSize, bool exactMatch)
         {
             //act.type != ACTtype.Function &&
@@ -273,6 +294,10 @@ namespace CloneAnalyser.Controllers
             }
         }
 
+        /// <summary> Finds all similar clusters for given subrree</summary>
+        /// <param name="act"> Subtree ACT</param>
+        /// <param name="similarityThreshold"> User input value for similarity threshold</param>
+        /// <param name="exactMatch"> If true only same buil-in function names are matched</param>
         private List<AnalyzeResult> FindSimilarClusters(ACT act, float similarityThreshold, bool exactMatch)
         {
             var list = new List<AnalyzeResult>();
@@ -320,25 +345,33 @@ namespace CloneAnalyser.Controllers
             return list;
         }
 
-        private void MigrateSection(ACT act, ACT parent, float clusterSimilarity, bool simpleSimilarity)
+        /// <summary> Analyses section of program</summary>
+        /// <param name="act"> Subtree ACT</param>
+        /// <param name="parent"> Parent node for given subtree</param>
+        /// <param name="similarityThreshold"> User input value for similarity threshold</param>
+        /// <param name="exactMatch"> If true only same buil-in function names are matched</param>
+        /// <returns> Returns all analysis results for this subtree</param>
+        private void MigrateSection(ACT act, ACT parent, float similarityThreshold, bool exactMatch)
         {
             List<AnalyzeResult> clusters;
             try {
-                clusters = FindSimilarClusters(act, clusterSimilarity, simpleSimilarity);
+                clusters = FindSimilarClusters(act, similarityThreshold, exactMatch);
             }
             catch (Exception e)
             {
                 System.Diagnostics.Debug.WriteLine("Exception while migrating section: " + e);
                 return;
             }
-
+            
             CloneCluster cluster = null;
             bool setTemplate = false;
             if (clusters.Count > 0)
             {
+                //Add result to existing cluster
                 AnalyzeResult res = clusters[0];
                 cluster = res.matchingCluster;
             } else {
+                //Add new cluster
                 cluster = new CloneCluster();
                 db.CloneClusters.Add(cluster);
                 setTemplate = true;

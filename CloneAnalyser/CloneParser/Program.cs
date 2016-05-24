@@ -44,7 +44,7 @@ namespace CloneParser
                 parser.BuildParseTree = true;
                 parseTree = parser.program();
 
-                ParseTreeWalker walker = new ParseTreeWalker();
+                //Console.WriteLine(parseTree.ToString());
                 visitor = new ECMAVisitor(tokens);
             }
             catch (System.NullReferenceException e)
@@ -277,5 +277,6 @@ namespace CloneParser
             Console.WriteLine("Press any key to continue!");
             Console.ReadKey();
         }
+
     }
 }

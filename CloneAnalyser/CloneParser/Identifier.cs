@@ -27,12 +27,11 @@ namespace CloneParser
             this.name = name;
             this.type = IdentifierType.Const;
             int firstCode = (int)(name.ToLower()[0]);
-            /*if (firstCode == 36 || firstCode == 95 || firstCode >= 61 && firstCode <= 122) {
-                this.type = IdentifierType.Func;
-            }*/
             this.type = type;
         }
-        
+
+        /// <summary> Sets identifier type</summary>
+        /// <param name="type"> Type of the identifier</param>
         public void SetType(IdentifierType type)
         {
             this.type = type;
@@ -41,9 +40,7 @@ namespace CloneParser
         public override string ToString()
         {
             char typeChar = type.ToString().ToLower()[0];
-            //return typeChar + "_" + name + ":" + mapping;
             return typeChar + "_" + name;
-            //return name;
         }
     }
 }

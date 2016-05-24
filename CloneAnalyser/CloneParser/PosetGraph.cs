@@ -8,24 +8,24 @@ namespace CloneParser
 {
     public class PosetGraph
     {
-        //The maximum number of convergence steps to prevent cycles
-        public static int maxConvergeSteps = 16;
-        public int conversionCount = 0;
-        public bool exactMatch { get; set; }
+       
+        public static int maxConvergeSteps = 16; //The maximum number of convergence steps to prevent infinite loop
+        public int conversionCount = 0; //The running number of steps
+        public bool exactMatch { get; set; } //If true then only built-in functions with same names are matched
 
         public int nodeCount { get; set; }
         public byte[,] adjacencyMatrix { get; set; }
         public List<int>[] inDegreeNodeList { get; set; }
         public List<int>[] outDegreeNodeList { get; set; }
 
-        public float[,] nodeSimilarity { get; set; }
-        public float[,] outNodeSimilarity { get; set; }
-        public float[,] inNodeSimilarity { get; set; }
+        public float[,] nodeSimilarity { get; set; } //node similarity matrix
+        public float[,] outNodeSimilarity { get; set; } //out similarity matrix
+        public float[,] inNodeSimilarity { get; set; } //in similarity matrix
 
-        private KeyValuePair<string, Identifier>[] variables = null;
-        private List<int>[] variableUsages = null;
-        private int matrixElementNr;
-        private List<ACT> matrixElements;
+        private KeyValuePair<string, Identifier>[] variables = null; //All variables
+        private List<int>[] variableUsages = null; //Varialbe usage mapping 
+        private int matrixElementNr; //matrixElementNumber used in grap creation
+        private List<ACT> matrixElements; //mapping to the ACT nodes in the matrix
 
         /// <summary> Constructor sets up the graph</summary>
         /// <param name="act"> ACT used for constructing graph</param>

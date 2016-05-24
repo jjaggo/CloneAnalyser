@@ -18,7 +18,9 @@ namespace CloneParser
             this.tokens = tokens;
         }
 
-        //This function also eliminates all function bodies
+        /// <summary> Creates source info based on given source interval.</summary>
+        /// <param name="sourceInterval"> Interval of source lexems</param>
+        /// <returns> Source info data</returns>
         private SourceInfo GetSourceInfo(Interval sourceInterval)
         {
             StringBuilder sb = new StringBuilder();
@@ -105,6 +107,8 @@ namespace CloneParser
             IToken endToken = tokens.Get(sourceInterval.b);
             return new SourceInfo(sb.ToString(), startToken.Line, startToken.StartIndex, endToken.Line, endToken.StopIndex);
         }
+
+        // Visitor pattern for the concrete syntax tree translation //
 
         public override ACT VisitProgram([NotNull] ECMAScriptParser.ProgramContext context)
         {
@@ -810,7 +814,6 @@ namespace CloneParser
         public override ACT VisitSwitchStatement([NotNull] ECMAScriptParser.SwitchStatementContext context)
         {
             ACT expression = Visit(context.expressionSequence());
-
             ACT caseBlock = Visit(context.caseBlock());
 
             SourceInfo source = GetSourceInfo(context.SourceInterval);
@@ -1003,6 +1006,82 @@ namespace CloneParser
         }
         #endregion
 
+        public override ACT VisitElementList([NotNull] ECMAScriptParser.ElementListContext context)
+        {
+            SourceInfo source = GetSourceInfo(context.SourceInterval);
+            ACT node = new ACT(source, ACTtype.Seq);
 
+            foreach (var identifier in context.children)
+            {
+                ACT child = Visit(identifier);
+                node.AddChild(child);
+            }
+
+            return node;
+        }
+
+        public override ACT VisitArgumentList([NotNull] ECMAScriptParser.ArgumentListContext context)
+        {
+            SourceInfo source = GetSourceInfo(context.SourceInterval);
+            ACT node = new ACT(source, ACTtype.Seq);
+
+            foreach (var identifier in context.children)
+            {
+                ACT child = Visit(identifier);
+                node.AddChild(child);
+            }
+
+            return node;
+        }
+
+        public override ACT VisitArrayLiteral([NotNull] ECMAScriptParser.ArrayLiteralContext context)
+        {
+            SourceInfo source = GetSourceInfo(context.SourceInterval);
+            ACT node = new ACT(source, ACTtype.Call, "[]");
+            if (context.elementList() != null)
+            {
+                node.AddChildBlock(Visit(context.elementList()));
+            }
+
+            return base.VisitArrayLiteral(context);
+        }
+
+        public override ACT VisitFunctionBody([NotNull] ECMAScriptParser.FunctionBodyContext context)
+        {
+            SourceInfo source = GetSourceInfo(context.SourceInterval);
+            ACT node = new ACT(source, ACTtype.Seq);
+
+            int i = 0;
+
+            if (context.sourceElements() != null)
+            {
+                IParseTree child = context.sourceElements().GetChild(i);
+                while (child != null)
+                {
+                    ACT res = Visit(child);
+                    node.AddChild(res);
+                    child = context.sourceElements().GetChild(++i);
+                }
+            }
+
+            return node;
+        }
+
+        public override ACT VisitStatement([NotNull] ECMAScriptParser.StatementContext context)
+        {
+            if (context.ChildCount > 0)
+            {
+                return Visit(context.children[0]);
+            }
+            SourceInfo source = GetSourceInfo(context.SourceInterval);
+            return new ACT(source, ACTtype.Empty);
+        }
+
+        public override ACT VisitElision([NotNull] ECMAScriptParser.ElisionContext context)
+        {
+            //Elision is additional commas between elements, we are ignoring them
+            SourceInfo source = GetSourceInfo(context.SourceInterval);
+            return new ACT(source, ACTtype.Empty);
+        }
     }
 }
